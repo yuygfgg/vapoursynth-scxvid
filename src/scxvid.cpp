@@ -163,25 +163,29 @@ static const VSFrameRef *VS_CC scxvidGetFrame(int n, int activationReason, void 
          }
 
          vsapi->freeFrame(src);
-         d->last_frame = n;
-
          d->prop_map.insert(std::pair<int, int>(frame, (stats.type == XVID_TYPE_IVOP)));
       }
+      d->last_frame = n;
 
       const VSFrameRef *src = vsapi->getFrameFilter(n, d->node, frameCtx);
       VSFrameRef *dst = vsapi->copyFrame(src, core);
       vsapi->freeFrame(src);
 
       VSMap *props = vsapi->getFramePropsRW(dst);
-      vsapi->propSetInt(props, "_SceneChangePrev", d->prop_map.at(n), paReplace);
-      d->prop_map.erase(n);
+      
+      auto it = d->prop_map.find(n);
+      if (it != d->prop_map.end()) {
+          vsapi->propSetInt(props, "_SceneChangePrev", it->second, paReplace);
+          d->prop_map.erase(n);
+      } else {
+          vsapi->propSetInt(props, "_SceneChangePrev", 0, paReplace);
+      }
 
       return dst;
    }
 
    return 0;
 }
-
 
 static void VS_CC scxvidFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
    ScxvidData *d = (ScxvidData *)instanceData;

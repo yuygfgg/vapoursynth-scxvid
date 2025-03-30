@@ -26,3 +26,7 @@ ltmain.sh
 missing
 .deps/
 .dirstamp
+.DS_Store
+.gitignore
+checks.json
+configure~
